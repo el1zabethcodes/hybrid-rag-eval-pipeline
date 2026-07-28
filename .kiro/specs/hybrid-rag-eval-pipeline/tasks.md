@@ -12,7 +12,7 @@ leaving no orphaned code.
 
 ## Tasks
 
-- [ ] 1. Project scaffold and tooling
+- [x] 1. Project scaffold and tooling
   - Create the directory tree from the design (`src/`, `tests/unit/`, `tests/property/`,
     `tests/integration/`, `ui/`, `docs/`)
   - Write `pyproject.toml` with all runtime and dev dependencies (pinned minimum
@@ -59,8 +59,8 @@ leaving no orphaned code.
       `EvaluationReport`, `QuestionResult`, `QuestionError` as Python `dataclass`
     - _Requirements: 2.1, 3.5, 5.3, 6.2, 7.3_
 
-- [ ] 5. Dense embedder
-  - [-] 5.1 Implement `src/retrieval/dense_embedder.py`
+- [x] 5. Dense embedder
+  - [x] 5.1 Implement `src/retrieval/dense_embedder.py`
     - Wrap `SentenceTransformer` with sync `encode()` and async `aencode()` (thread-pool)
     - Validate post-encoding that vector length == `EmbedderSettings.vector_dim`
     - _Requirements: 2.2_
@@ -77,7 +77,7 @@ leaving no orphaned code.
     - _Requirements: 2.2_
 
 - [ ] 6. Sparse encoder
-  - [-] 6.1 Implement `src/retrieval/sparse_encoder.py`
+  - [x] 6.1 Implement `src/retrieval/sparse_encoder.py`
     - Wrap `fastembed` BM25 model; expose sync `encode()` and async `aencode()`
     - Return `SparseVector(indices, values)` per text; use thread-pool for async
     - _Requirements: 2.3_
@@ -93,8 +93,8 @@ leaving no orphaned code.
     - File: `tests/unit/test_sparse_encoder.py`
     - _Requirements: 2.3_
 
-- [ ] 7. RRF merger
-  - [ ] 7.1 Implement `src/retrieval/rrf.py` — pure function `rrf_merge()`
+- [x] 7. RRF merger
+  - [x] 7.1 Implement `src/retrieval/rrf.py` — pure function `rrf_merge()`
     - Implement rank assignment, per-chunk RRF score accumulation, deduplication,
       descending sort, and top-`top_k` truncation
     - _Requirements: 3.3, 3.4, 3.5, 10.5_
@@ -110,12 +110,12 @@ leaving no orphaned code.
     - File: `tests/unit/test_rrf.py`
     - _Requirements: 3.3, 3.4, 3.5_
 
-- [ ] 8. Checkpoint — core retrieval components
+- [x] 8. Checkpoint — core retrieval components
   - Ensure all tests in `tests/unit/` and `tests/property/` written so far pass.
   - Run `pytest tests/unit tests/property --tb=short`; ask the user if any failures arise.
 
-- [ ] 9. Ingestion service
-  - [ ] 9.1 Implement `src/ingestion/ingestor.py`
+- [x] 9. Ingestion service
+  - [x] 9.1 Implement `src/ingestion/ingestor.py`
     - Implement sliding-window token chunking (`chunk_size`, `chunk_overlap`)
     - Run `DenseEmbedder.aencode()` and `SparseEncoder.aencode()` in parallel via
       `asyncio.gather`
@@ -155,7 +155,7 @@ leaving no orphaned code.
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
 - [ ] 11. Cross-encoder reranker
-  - [ ] 11.1 Implement `src/reranking/reranker.py`
+  - [~] 11.1 Implement `src/reranking/reranker.py`
     - Build `(query, text)` pairs; call `CrossEncoder.predict()` in a single batched
       forward pass (thread-pool executor)
     - Sort candidates by descending score; truncate to `rerank_top_k`
@@ -175,7 +175,7 @@ leaving no orphaned code.
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
 - [ ] 12. LLM generator
-  - [ ] 12.1 Implement `src/generation/generator.py` with strategy-pattern backends
+  - [~] 12.1 Implement `src/generation/generator.py` with strategy-pattern backends
     - Define `LLMBackend` ABC; implement `OpenAIBackend`, `OllamaBackend`,
       `LiteLLMBackend`
     - Implement context truncation with `tiktoken` before prompt construction
@@ -205,7 +205,7 @@ leaving no orphaned code.
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
 
 - [ ] 13. Pipeline orchestrator
-  - [ ] 13.1 Implement `src/pipeline/pipeline.py`
+  - [~] 13.1 Implement `src/pipeline/pipeline.py`
     - Wire `HybridRetriever → CrossEncoderReranker → LLMGenerator` in sequential
       async steps; measure end-to-end latency
     - Catch any step error and re-raise as `PipelineError(step_name=..., cause=...)`
@@ -228,12 +228,12 @@ leaving no orphaned code.
     - File: `tests/unit/test_pipeline.py`
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 14. Checkpoint — pipeline core complete
+- [~] 14. Checkpoint — pipeline core complete
   - Run `pytest tests/unit tests/property --tb=short`; confirm all tests pass.
   - Ask the user if any design deviations have emerged before continuing.
 
 - [ ] 15. Ragas evaluator
-  - [ ] 15.1 Implement `src/evaluation/evaluator.py`
+  - [~] 15.1 Implement `src/evaluation/evaluator.py`
     - Implement `evaluate()`: optional sampling with seeded `random`, run `Pipeline.query()`
       per question, build `ragas.Dataset`, call `ragas.evaluate()` with Faithfulness /
       AnswerRelevancy / ContextPrecision
@@ -260,33 +260,33 @@ leaving no orphaned code.
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
 - [ ] 16. FastAPI application
-  - [ ] 16.1 Implement `src/api/schemas.py` — Pydantic v2 request/response models
+  - [~] 16.1 Implement `src/api/schemas.py` — Pydantic v2 request/response models
     - Define `QueryRequest`, `QueryResponse`, `IngestRequest`, `IngestResponse`,
       `EvaluateRequest`, `EvaluateResponse`, `HealthResponse`; all fields typed and
       documented
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
 
-  - [ ] 16.2 Implement `src/api/app.py` — `create_app()` factory and global middleware
+  - [~] 16.2 Implement `src/api/app.py` — `create_app()` factory and global middleware
     - Register global exception handler for `PipelineError` → HTTP 500 with
       `{"error": ..., "step": ...}`
     - Instantiate pipeline components once; store in `app.state`
     - Implement Qdrant startup probe with 5-attempt exponential back-off
     - _Requirements: 6.3, 8.6, 11.6_
 
-  - [ ] 16.3 Implement `src/api/routers/health.py` — `GET /health`
+  - [~] 16.3 Implement `src/api/routers/health.py` — `GET /health`
     - Probe Qdrant and LLM backend connectivity; return 200 `{"status": "ok"}` or 503
     - _Requirements: 8.4_
 
-  - [ ] 16.4 Implement `src/api/routers/ingest.py` — `POST /ingest`
+  - [~] 16.4 Implement `src/api/routers/ingest.py` — `POST /ingest`
     - Validate request body; call `IngestionService.ingest()`; return `IngestResponse`
     - _Requirements: 8.2, 8.5_
 
-  - [ ] 16.5 Implement `src/api/routers/query.py` — `POST /query`
+  - [~] 16.5 Implement `src/api/routers/query.py` — `POST /query`
     - Handle standard JSON response and `stream=true` SSE path (`text/event-stream`)
     - Call `Pipeline.query()` or `Pipeline.stream()` accordingly
     - _Requirements: 8.1, 8.5, 8.8_
 
-  - [ ] 16.6 Implement `src/api/routers/evaluate.py` — `POST /evaluate`
+  - [~] 16.6 Implement `src/api/routers/evaluate.py` — `POST /evaluate`
     - Validate request body; call `RagasEvaluator.evaluate()`; return `EvaluateResponse`
     - _Requirements: 8.3, 8.5_
 
@@ -305,12 +305,12 @@ leaving no orphaned code.
     - File: `tests/integration/test_api.py`
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.8, 10.2_
 
-- [ ] 17. Checkpoint — API complete
+- [~] 17. Checkpoint — API complete
   - Run `pytest tests/ --tb=short --cov=src --cov-report=term-missing`
   - Confirm ≥ 80% line coverage across `src/`; ask the user about any gaps.
 
 - [ ] 18. Streamlit UI
-  - [ ] 18.1 Implement `ui/app.py`
+  - [~] 18.1 Implement `ui/app.py`
     - Build query input + submit button; call `POST /query` via `httpx`
     - Display answer, context chunks with metadata, per-chunk reranker scores
     - Sidebar for `top_k`, `rerank_top_k`, LLM provider (persisted in `st.session_state`)
@@ -319,35 +319,35 @@ leaving no orphaned code.
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6_
 
 - [ ] 19. Docker Compose and containerisation
-  - [ ] 19.1 Write `Dockerfile` (multi-stage: `builder` + `runtime`)
+  - [~] 19.1 Write `Dockerfile` (multi-stage: `builder` + `runtime`)
     - Install deps in `builder` stage; copy only runtime artifacts to `runtime` stage
     - _Requirements: 11.2_
 
-  - [ ] 19.2 Write `docker-compose.yml`
+  - [~] 19.2 Write `docker-compose.yml`
     - Define `api`, `ui`, and `qdrant` services
     - Configure Qdrant persistent named volume and `env_file: .env` for secrets
     - Add health-check on the `api` service (`GET /health`)
     - _Requirements: 11.1, 11.3, 11.4, 11.5_
 
 - [ ] 20. Documentation
-  - [ ] 20.1 Write `README.md`
+  - [~] 20.1 Write `README.md`
     - Cover environment setup, configuration, Docker Compose quickstart, test suite
       invocation, and project structure overview
     - _Requirements: 12.1_
 
-  - [ ] 20.2 Write MkDocs pages under `docs/`
+  - [~] 20.2 Write MkDocs pages under `docs/`
     - Create `docs/architecture.md`, `docs/configuration.md` (all keys, types, defaults),
       `docs/api_reference.md`, `docs/evaluation_guide.md`, `docs/contributing.md`
     - Add `mkdocs.yml` at repo root with `nav` referencing all five pages
     - _Requirements: 12.2, 12.3_
 
-  - [ ] 20.3 Add Google-style docstrings to all public classes and functions in `src/`
+  - [~] 20.3 Add Google-style docstrings to all public classes and functions in `src/`
     - Cover `DenseEmbedder`, `SparseEncoder`, `rrf_merge`, `HybridRetriever`,
       `CrossEncoderReranker`, `LLMGenerator` (all backends), `Pipeline`,
       `IngestionService`, `RagasEvaluator`, `AppSettings`, all router functions
     - _Requirements: 12.4_
 
-- [ ] 21. Final checkpoint — full suite
+- [~] 21. Final checkpoint — full suite
   - Run `pytest tests/ -x --tb=short --cov=src --cov-report=term-missing --asyncio-mode=auto`
   - All tests must pass; coverage must be ≥ 80%; ask the user if anything needs adjustment.
 

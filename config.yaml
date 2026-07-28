@@ -1,0 +1,49 @@
+# Hybrid RAG Evaluation Pipeline — Configuration Reference
+# All keys shown with example values. Override any key here or via environment variables.
+# Set YAML_CONFIG_PATH=/path/to/config.yaml to activate this file.
+# Priority (highest → lowest): env vars → this YAML file → .env file → model defaults.
+
+qdrant:
+  url: "http://localhost:6333"          # Qdrant service URL
+  collection_name: "rag_chunks"         # Name of the Qdrant collection
+  api_key: null                         # Qdrant API key (null = no auth)
+
+embedder:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"  # HuggingFace model ID
+  vector_dim: 384                        # Must match the chosen model's output dimension
+  batch_size: 64                         # Encoding batch size
+
+sparse_encoder:
+  model_name: "Qdrant/bm25"             # fastembed BM25 model identifier
+
+reranker:
+  model_name: "cross-encoder/ms-marco-MiniLM-L-6-v2"  # Cross-encoder model ID
+  rerank_top_k: 5                        # Number of candidates returned after reranking
+
+llm:
+  provider: "openai"                     # One of: openai | ollama | litellm
+  model_name: "gpt-4o-mini"             # Model identifier for the chosen provider
+  max_context_tokens: 4096              # Maximum tokens allowed in the context window
+  stream_response: false                # Enable token-by-token streaming
+  api_key: null                         # LLM provider API key (reads from LLM__API_KEY env var)
+  base_url: null                        # Custom base URL for Ollama / LiteLLM (null = default)
+
+retrieval:
+  dense_top_k: 20                       # Top-K results from dense vector search
+  sparse_top_k: 20                      # Top-K results from sparse BM25 search
+  retrieval_top_k: 10                   # Final top-K after RRF merge
+  rrf_k: 60                             # RRF fusion constant (higher = softer rank penalty)
+
+ingestion:
+  chunk_size: 512                       # Chunk size in tokens
+  chunk_overlap: 64                     # Overlap between consecutive chunks in tokens
+  ingestion_batch_size: 100             # Number of chunks per Qdrant upsert batch
+
+evaluation:
+  eval_output_dir: "./eval_results"     # Directory where evaluation JSON reports are saved
+  eval_sample_size: null                # Randomly sample this many QA pairs (null = all)
+  random_seed: 42                       # Random seed for reproducible sampling
+  judge_llm_provider: "openai"          # LLM provider for Ragas evaluation judge
+  judge_llm_model: "gpt-4o-mini"        # Model identifier for the evaluation judge
+  judge_llm_api_key: null               # API key for the judge LLM (reads RAGAS_LLM_API_KEY)
+  judge_llm_base_url: null              # Custom base URL for Ollama / LiteLLM judge
