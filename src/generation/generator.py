@@ -11,8 +11,9 @@ from __future__ import annotations
 import abc
 import json
 import os
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any
 
 import httpx
 import tiktoken
@@ -26,9 +27,9 @@ from src.models import GenerationResult
 class _BackendResult:
     answer: str
     model_id: str
-    prompt_tokens: Optional[int] = None
-    completion_tokens: Optional[int] = None
-    total_tokens: Optional[int] = None
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    total_tokens: int | None = None
 
 
 class LLMBackend(abc.ABC):
@@ -111,7 +112,7 @@ class OllamaBackend(LLMBackend):
 
     async def generate(self, prompt: str) -> _BackendResult:
         url = f"{self._base_url}/api/chat"
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "model": self._settings.model_name,
             "messages": [{"role": "user", "content": prompt}],
             "stream": False,
@@ -145,7 +146,7 @@ class OllamaBackend(LLMBackend):
 
     async def stream(self, prompt: str) -> AsyncGenerator[str, None]:
         url = f"{self._base_url}/api/chat"
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "model": self._settings.model_name,
             "messages": [{"role": "user", "content": prompt}],
             "stream": True,
@@ -154,8 +155,9 @@ class OllamaBackend(LLMBackend):
             async with self._client.stream("POST", url, json=payload) as response:
                 if response.status_code >= 400:
                     body = await response.aread()
+                    body_str = body.decode("utf-8", errors="replace")
                     raise GenerationError(
-                        f"Ollama returned HTTP {response.status_code}: {body.decode('utf-8', errors='replace')}",
+                        f"Ollama returned HTTP {response.status_code}: {body_str}",
                         status_code=response.status_code,
                     )
                 async for line in response.aiter_lines():
@@ -254,12 +256,12 @@ class LLMGenerator:
 
     _SYSTEM_INSTRUCTION = "You are a helpful assistant. Answer using only the provided context."
 
-    def __init__(self, settings: LLMSettings, backend: Optional[LLMBackend] = None) -> None:
+    def __init__(self, settings: LLMSettings, backend: LLMBackend | None = None) -> None:
         self._settings = settings
         self._backend = backend or self._create_backend(settings)
         self._encoding = self._get_encoding(settings.model_name)
 
-    async def generate(self, query: str, context: List[str]) -> GenerationResult:
+    async def generate(self, query: str, context: list[str]) -> GenerationResult:
         """Generate an answer using the configured backend.
 
         Args:
@@ -299,7 +301,7 @@ class LLMGenerator:
             total_tokens=int(total_tokens),
         )
 
-    async def stream(self, query: str, context: List[str]) -> AsyncGenerator[str, None]:
+    async def stream(self, query: str, context: list[str]) -> AsyncGenerator[str, None]:
         """Stream an answer using the configured backend.
 
         Args:
@@ -330,12 +332,12 @@ class LLMGenerator:
                 raise StreamingError(f"Streaming failed: {exc}") from exc
             raise GenerationError(f"Generation failed: {exc}") from exc
 
-    def _truncate_context(self, context: List[str]) -> List[str]:
+    def _truncate_context(self, context: list[str]) -> list[str]:
         budget = max(0, int(self._settings.max_context_tokens))
         if budget == 0 or not context:
             return []
 
-        kept: List[str] = []
+        kept: list[str] = []
         used = 0
         for chunk in context:
             chunk_tokens = self._count_tokens(chunk)
@@ -345,7 +347,7 @@ class LLMGenerator:
             used += chunk_tokens
         return kept
 
-    def _build_prompt(self, query: str, context: List[str]) -> str:
+    def _build_prompt(self, query: str, context: list[str]) -> str:
         context_block = "\n---\n".join(context)
         return (
             f"System: {self._SYSTEM_INSTRUCTION}\n"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import AsyncGenerator, List
+from collections.abc import AsyncGenerator
 
 import pytest
 
@@ -96,7 +96,7 @@ async def test_stream_passthrough() -> None:
     )
     generator = LLMGenerator(settings, backend=backend)
 
-    chunks: List[str] = []
+    chunks: list[str] = []
     async for tok in generator.stream("q", ["ctx"]):
         chunks.append(tok)
 

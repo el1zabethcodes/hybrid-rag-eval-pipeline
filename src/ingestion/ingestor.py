@@ -40,12 +40,10 @@ from __future__ import annotations
 
 import asyncio
 import uuid
-from typing import List
 
 import tiktoken
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
-from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import (
     Distance,
     Modifier,
@@ -53,7 +51,6 @@ from qdrant_client.http.models import (
     SparseVector,
     SparseVectorParams,
     VectorParams,
-    VectorsConfig,
 )
 
 from src.config.settings import EmbedderSettings, IngestionSettings, QdrantSettings
@@ -133,7 +130,7 @@ class IngestionService:
     # Public interface
     # ------------------------------------------------------------------
 
-    async def ingest(self, documents: List[Document]) -> IngestionResult:
+    async def ingest(self, documents: list[Document]) -> IngestionResult:
         """Chunk, encode, and store *documents* in the Qdrant collection.
 
         Steps performed:
@@ -164,7 +161,7 @@ class IngestionService:
             print(result.collection_name)
         """
         # Step 1 — chunk all documents
-        chunks: List[Chunk] = []
+        chunks: list[Chunk] = []
         for document in documents:
             chunks.extend(self._chunk_document(document))
 
@@ -203,7 +200,7 @@ class IngestionService:
     # Chunking
     # ------------------------------------------------------------------
 
-    def _chunk_document(self, document: Document) -> List[Chunk]:
+    def _chunk_document(self, document: Document) -> list[Chunk]:
         """Split a single document into overlapping token-window chunks.
 
         The text is first tokenised using the ``cl100k_base`` tiktoken encoding.
@@ -241,7 +238,7 @@ class IngestionService:
         if not token_ids:
             return []
 
-        chunks: List[Chunk] = []
+        chunks: list[Chunk] = []
         chunk_index = 0
         start = 0
 
@@ -328,9 +325,9 @@ class IngestionService:
 
     def _upload_batch(
         self,
-        chunks: List[Chunk],
-        dense_vectors: List[List[float]],
-        sparse_vectors: List[SparseVector],
+        chunks: list[Chunk],
+        dense_vectors: list[list[float]],
+        sparse_vectors: list[SparseVector],
     ) -> None:
         """Upsert a single batch of chunks into Qdrant.
 
@@ -351,7 +348,7 @@ class IngestionService:
                 fails for any reason (network error, server-side error, etc.).
         """
         collection_name = self._qdrant_settings.collection_name
-        points: List[PointStruct] = []
+        points: list[PointStruct] = []
 
         for chunk, dense_vec, sparse_vec in zip(chunks, dense_vectors, sparse_vectors):
             point = PointStruct(

@@ -26,7 +26,7 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Literal
 
 from pydantic import BaseModel, ValidationError
 from pydantic.fields import FieldInfo
@@ -35,7 +35,6 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
-from typing_extensions import Literal
 
 from src.exceptions import ConfigurationError
 
@@ -67,7 +66,7 @@ class QdrantSettings(BaseModel):
 
     url: str = "http://localhost:6333"
     collection_name: str = "rag_chunks"
-    api_key: Optional[str] = None
+    api_key: str | None = None
 
 
 class EmbedderSettings(BaseModel):
@@ -124,8 +123,8 @@ class LLMSettings(BaseModel):
     model_name: str = "gpt-4o-mini"
     max_context_tokens: int = 4096
     stream_response: bool = False
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None
+    api_key: str | None = None
+    base_url: str | None = None
 
 
 class RetrievalSettings(BaseModel):
@@ -178,12 +177,12 @@ class EvaluationSettings(BaseModel):
     """
 
     eval_output_dir: str = "./eval_results"
-    eval_sample_size: Optional[int] = None
+    eval_sample_size: int | None = None
     random_seed: int = 42
     judge_llm_provider: Literal["openai", "ollama", "litellm"] = "openai"
     judge_llm_model: str = "gpt-4o-mini"
-    judge_llm_api_key: Optional[str] = None
-    judge_llm_base_url: Optional[str] = None
+    judge_llm_api_key: str | None = None
+    judge_llm_base_url: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -212,7 +211,7 @@ class YamlConfigSettingsSource(PydanticBaseSettingsSource):
 
     def __init__(
         self,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         yaml_file: str | Path,
     ) -> None:
         super().__init__(settings_cls)
@@ -254,7 +253,7 @@ class YamlConfigSettingsSource(PydanticBaseSettingsSource):
 
     def get_field_value(
         self, field: FieldInfo, field_name: str
-    ) -> Tuple[Any, str, bool]:
+    ) -> tuple[Any, str, bool]:
         """Return the value for *field_name* from the YAML data, if present.
 
         Args:
@@ -340,12 +339,12 @@ class AppSettings(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
-    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Build the ordered tuple of settings sources.
 
         Priority (index 0 = highest priority):
@@ -373,7 +372,7 @@ class AppSettings(BaseSettings):
         return tuple(sources)
 
     @classmethod
-    def create(cls) -> "AppSettings":
+    def create(cls) -> AppSettings:
         """Construct ``AppSettings``, wrapping ``ValidationError`` in
         :exc:`~src.exceptions.ConfigurationError`.
 

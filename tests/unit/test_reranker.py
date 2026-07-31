@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Tuple
-
 import pytest
 
 from src.config.settings import RerankerSettings
@@ -15,10 +13,10 @@ class DummyCrossEncoder:
 
     def predict(
         self,
-        pairs: List[Tuple[str, str]],
+        pairs: list[tuple[str, str]],
         batch_size: int = 32,
         show_progress_bar: bool = False,
-    ) -> List[float]:
+    ) -> list[float]:
         _ = (batch_size, show_progress_bar)
         return [float(len(text)) for _, text in pairs]
 

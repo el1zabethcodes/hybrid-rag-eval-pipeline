@@ -30,7 +30,6 @@ from __future__ import annotations
 import asyncio
 import functools
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Optional
 
 from fastembed import SparseTextEmbedding
 from qdrant_client.http.models import SparseVector
@@ -67,7 +66,7 @@ class SparseEncoder:
     def __init__(
         self,
         settings: SparseEncoderSettings,
-        executor: Optional[ThreadPoolExecutor] = None,
+        executor: ThreadPoolExecutor | None = None,
     ) -> None:
         self._settings = settings
         self._model = SparseTextEmbedding(model_name=settings.model_name)
@@ -80,7 +79,7 @@ class SparseEncoder:
     # Public interface
     # ------------------------------------------------------------------
 
-    def encode(self, texts: List[str]) -> List[SparseVector]:
+    def encode(self, texts: list[str]) -> list[SparseVector]:
         """Encode a list of texts into BM25 sparse vectors synchronously.
 
         Each text is tokenised and its term weights are computed on the fly
@@ -108,7 +107,7 @@ class SparseEncoder:
             return []
 
         embeddings = self._model.embed(texts)
-        result: List[SparseVector] = []
+        result: list[SparseVector] = []
         for emb in embeddings:
             result.append(
                 SparseVector(
@@ -118,7 +117,7 @@ class SparseEncoder:
             )
         return result
 
-    async def aencode(self, texts: List[str]) -> List[SparseVector]:
+    async def aencode(self, texts: list[str]) -> list[SparseVector]:
         """Encode a list of texts into BM25 sparse vectors asynchronously.
 
         The underlying model inference is dispatched to the thread-pool
@@ -143,5 +142,5 @@ class SparseEncoder:
         """
         loop = asyncio.get_event_loop()
         fn = functools.partial(self.encode, texts)
-        result: List[SparseVector] = await loop.run_in_executor(self._executor, fn)
+        result: list[SparseVector] = await loop.run_in_executor(self._executor, fn)
         return result

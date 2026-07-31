@@ -26,7 +26,6 @@ from __future__ import annotations
 import asyncio
 import functools
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Optional
 
 from sentence_transformers import SentenceTransformer
 
@@ -68,7 +67,7 @@ class DenseEmbedder:
     def __init__(
         self,
         settings: EmbedderSettings,
-        executor: Optional[ThreadPoolExecutor] = None,
+        executor: ThreadPoolExecutor | None = None,
     ) -> None:
         self._settings = settings
         self._model = SentenceTransformer(settings.model_name)
@@ -81,7 +80,7 @@ class DenseEmbedder:
     # Public interface
     # ------------------------------------------------------------------
 
-    def encode(self, texts: List[str]) -> List[List[float]]:
+    def encode(self, texts: list[str]) -> list[list[float]]:
         """Encode a list of texts into dense vectors synchronously.
 
         Texts are encoded in a single batched forward pass using
@@ -115,7 +114,7 @@ class DenseEmbedder:
         self._validate_dimensions(result)
         return result
 
-    async def aencode(self, texts: List[str]) -> List[List[float]]:
+    async def aencode(self, texts: list[str]) -> list[list[float]]:
         """Encode a list of texts into dense vectors asynchronously.
 
         The underlying model inference is dispatched to the thread-pool
@@ -141,14 +140,14 @@ class DenseEmbedder:
         """
         loop = asyncio.get_event_loop()
         fn = functools.partial(self.encode, texts)
-        result: List[List[float]] = await loop.run_in_executor(self._executor, fn)
+        result: list[list[float]] = await loop.run_in_executor(self._executor, fn)
         return result
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _validate_dimensions(self, vectors: List[List[float]]) -> None:
+    def _validate_dimensions(self, vectors: list[list[float]]) -> None:
         """Validate that every vector in *vectors* has the expected length.
 
         Args:

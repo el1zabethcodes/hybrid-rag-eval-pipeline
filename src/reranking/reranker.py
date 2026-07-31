@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import asyncio
 import functools
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Optional, Sequence, Tuple
 
 from sentence_transformers import CrossEncoder
 
@@ -40,7 +40,7 @@ class CrossEncoderReranker:
     def __init__(
         self,
         settings: RerankerSettings,
-        executor: Optional[ThreadPoolExecutor] = None,
+        executor: ThreadPoolExecutor | None = None,
         batch_size: int = 32,
     ) -> None:
         self._settings = settings
@@ -56,7 +56,7 @@ class CrossEncoderReranker:
             thread_name_prefix="reranker",
         )
 
-    def rerank_sync(self, query: str, candidates: List[ScoredChunk]) -> List[ScoredChunk]:
+    def rerank_sync(self, query: str, candidates: list[ScoredChunk]) -> list[ScoredChunk]:
         """Rerank candidates synchronously.
 
         Args:
@@ -72,7 +72,7 @@ class CrossEncoderReranker:
         if not candidates or self._settings.rerank_top_k <= 0:
             return []
 
-        pairs: List[Tuple[str, str]] = [(query, c.chunk.text) for c in candidates]
+        pairs: list[tuple[str, str]] = [(query, c.chunk.text) for c in candidates]
         try:
             scores_raw = self._model.predict(
                 pairs,
@@ -95,7 +95,7 @@ class CrossEncoderReranker:
         reranked.sort(key=lambda sc: (-sc.score, sc.chunk.id))
         return reranked[: min(self._settings.rerank_top_k, len(reranked))]
 
-    async def rerank(self, query: str, candidates: List[ScoredChunk]) -> List[ScoredChunk]:
+    async def rerank(self, query: str, candidates: list[ScoredChunk]) -> list[ScoredChunk]:
         """Rerank candidates asynchronously without blocking the event loop.
 
         Args:
@@ -110,6 +110,6 @@ class CrossEncoderReranker:
         """
         loop = asyncio.get_event_loop()
         fn = functools.partial(self.rerank_sync, query, candidates)
-        result: List[ScoredChunk] = await loop.run_in_executor(self._executor, fn)
+        result: list[ScoredChunk] = await loop.run_in_executor(self._executor, fn)
         return result
 
